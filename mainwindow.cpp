@@ -35,9 +35,26 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent),
     // Update text edit with shader source
     ui -> textEdit -> setPlainText(glWidget -> getFragShaderSource());
 
+    // Recompile on button press
+    connect(ui -> compileButton, SIGNAL (released()),this, SLOT (handleCompile()));
+
+    connect(ui -> textEdit, SIGNAL (textChanged()),this, SLOT (handleCompile()));
+
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
+}
+
+void MainWindow::handleCompile() {
+
+    QString source = ui -> textEdit -> toPlainText();
+    bool success = glWidget -> setFragmentShaderSource(source);
+
+    if(success) {
+        statusBar()->showMessage("Compiled!");
+    } else {
+        statusBar()->showMessage("Failed to compile!");
+    }
 }

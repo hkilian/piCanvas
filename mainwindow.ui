@@ -48,9 +48,9 @@
      </layout>
     </item>
     <item>
-     <widget class="QPushButton" name="runButton">
+     <widget class="QPushButton" name="compileButton">
       <property name="text">
-       <string>Run</string>
+       <string>Compile</string>
       </property>
      </widget>
     </item>

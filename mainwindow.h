@@ -15,10 +15,15 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
-private:
-        Ui::MainWindow *ui;
+private slots:
 
-        GLWidget *glWidget;
+     void handleCompile();
+
+private:
+
+
+    Ui::MainWindow *ui;
+    GLWidget *glWidget;
 
 };
 

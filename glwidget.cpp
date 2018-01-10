@@ -12,6 +12,7 @@ GLWidget::GLWidget(QWidget *parent)
       program(0)
 {
     memset(textures, 0, sizeof(textures));
+
 }
 
 GLWidget::~GLWidget()
@@ -58,7 +59,7 @@ void GLWidget::initializeGL()
 #define PROGRAM_VERTEX_ATTRIBUTE 0
 #define PROGRAM_TEXCOORD_ATTRIBUTE 1
 
-    QOpenGLShader *vshader = new QOpenGLShader(QOpenGLShader::Vertex, this);
+    vshader = new QOpenGLShader(QOpenGLShader::Vertex, this);
     m_vertshader =
         "attribute highp vec4 vertex;\n"
         "attribute mediump vec4 texCoord;\n"
@@ -71,14 +72,13 @@ void GLWidget::initializeGL()
         "}\n";
     vshader->compileSourceCode(m_vertshader);
 
-    QOpenGLShader *fshader = new QOpenGLShader(QOpenGLShader::Fragment, this);
+    fshader = new QOpenGLShader(QOpenGLShader::Fragment, this);
     m_fragshader =
-        "uniform sampler2D texture;\n"
-        "varying mediump vec4 texc;\n"
-        "void main(void)\n"
-        "{\n"
-        "    gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);\n"
-        "}\n";
+        "uniform vec2 u_resolution;\n\n"
+        "void main(void) {\n\n"
+        "    vec2 st = gl_FragCoord.xy/u_resolution;\n"
+        "    gl_FragColor = vec4(st.x, st.y, 0.0, 1.0);\n"
+        "\n}\n";
     fshader->compileSourceCode(m_fragshader);
 
     program = new QOpenGLShaderProgram;
@@ -87,9 +87,8 @@ void GLWidget::initializeGL()
     program->bindAttributeLocation("vertex", PROGRAM_VERTEX_ATTRIBUTE);
     program->bindAttributeLocation("texCoord", PROGRAM_TEXCOORD_ATTRIBUTE);
     program->link();
-
     program->bind();
-    program->setUniformValue("texture", 0);
+    program->setUniformValue("u_resolution", width(), height());
 }
 
 void GLWidget::paintGL()
@@ -98,22 +97,24 @@ void GLWidget::paintGL()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     QMatrix4x4 m;
-    m.ortho(-0.5f, +0.5f, +0.5f, -0.5f, 4.0f, 15.0f);
+    float t = 0.2;
+    m.ortho(-t, +t, +t, -t, 4.0f, 25.0f);
     m.translate(0.0f, 0.0f, -10.0f);
     m.rotate(xRot / 16.0f, 1.0f, 0.0f, 0.0f);
     m.rotate(yRot / 16.0f, 0.0f, 1.0f, 0.0f);
     m.rotate(zRot / 16.0f, 0.0f, 0.0f, 1.0f);
 
     program->setUniformValue("matrix", m);
+    program->setUniformValue("u_resolution", width(), height());
     program->enableAttributeArray(PROGRAM_VERTEX_ATTRIBUTE);
     program->enableAttributeArray(PROGRAM_TEXCOORD_ATTRIBUTE);
     program->setAttributeBuffer(PROGRAM_VERTEX_ATTRIBUTE, GL_FLOAT, 0, 3, 5 * sizeof(GLfloat));
     program->setAttributeBuffer(PROGRAM_TEXCOORD_ATTRIBUTE, GL_FLOAT, 3 * sizeof(GLfloat), 2, 5 * sizeof(GLfloat));
 
     for (int i = 0; i < 6; ++i) {
-        //textures[i]->bind();
         glDrawArrays(GL_TRIANGLE_FAN, i * 4, 4);
     }
+
 }
 void GLWidget::resizeGL(int width, int height)
 {
@@ -182,4 +183,50 @@ QString GLWidget::getVertexShaderSource() {
 
 QString GLWidget::getFragShaderSource() {
     return m_fragshader;
+}
+
+void GLWidget::setVertexShaderSource(QString source) {
+    m_vertshader = source;
+}
+
+bool GLWidget::setFragmentShaderSource(QString source) {
+
+    m_fragshader = source;
+
+    //QMutexLocker locker(&m);
+
+    if (program && program->isLinked()) {
+        program->removeShader(fshader);
+    }
+
+    //program = new QOpenGLShaderProgram();
+    fshader = new QOpenGLShader(QOpenGLShader::Fragment, this);
+
+    if (!fshader->compileSourceCode(m_fragshader)) {
+        qDebug() << "Error compiling fragment shader:";
+        qDebug() << fshader->log();
+        return false;
+    }
+
+    if (!program->addShader(fshader)) {
+        qDebug() << "Failed to add fragment shader:\n" << program->log();
+        return false;
+    }
+
+    // Compile fragment shader
+    if (!program->addShader(vshader)) {
+        qDebug() << "Failed to add vertex shader:\n" << program->log();
+        return false;
+    }
+
+    if (!program->link()) {
+        qDebug() << "Failed to link the program\n:" << program->log();
+        return false;
+    }
+
+    // Update opengl
+    update();
+
+    return true;
+
 }

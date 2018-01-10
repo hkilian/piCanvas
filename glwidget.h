@@ -5,6 +5,7 @@
 #include <QOpenGLWidget>
 #include <QOpenGLFunctions>
 #include <QOpenGLBuffer>
+#include <QOpenGLShaderProgram>
 
 QT_FORWARD_DECLARE_CLASS(QOpenGLShaderProgram);
 QT_FORWARD_DECLARE_CLASS(QOpenGLTexture)
@@ -24,6 +25,9 @@ public:
 
     QString getFragShaderSource();
     QString getVertexShaderSource();
+
+    void setVertexShaderSource(QString source);
+    bool setFragmentShaderSource(QString source);
 
 signals:
     void clicked();
@@ -49,7 +53,10 @@ private:
     QOpenGLBuffer vbo;
 
     QString m_fragshader;
+    QOpenGLShader *fshader;
+
     QString m_vertshader;
+    QOpenGLShader *vshader;
 
 };
 
