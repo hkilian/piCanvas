@@ -6,6 +6,8 @@
 #include <QOpenGLFunctions>
 #include <QOpenGLBuffer>
 #include <QOpenGLShaderProgram>
+#include <QTimer>
+#include <QTime>
 
 QT_FORWARD_DECLARE_CLASS(QOpenGLShaderProgram);
 QT_FORWARD_DECLARE_CLASS(QOpenGLTexture)
@@ -41,6 +43,7 @@ protected:
     void mouseReleaseEvent(QMouseEvent *event) override;
 
 private:
+    void handleUpdate();
     void makeObject();
 
     QColor clearColor;
@@ -57,6 +60,11 @@ private:
 
     QString m_vertshader;
     QOpenGLShader *vshader;
+
+    QTimer m_updatetimer;
+    QTime m_time;
+
+    float m_zoom = 0.2;
 
 };
 

@@ -33,12 +33,12 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent),
     ui -> mainContainer -> addWidget(glWidget);
 
     // Update text edit with shader source
-    ui -> textEdit -> setPlainText(glWidget -> getFragShaderSource());
+    ui -> textEditFragment -> setPlainText(glWidget -> getFragShaderSource());
+    ui -> textEditVertex -> setPlainText(glWidget -> getVertexShaderSource());
 
-    // Recompile on button press
+    // Recompile on button press or text change
     connect(ui -> compileButton, SIGNAL (released()),this, SLOT (handleCompile()));
-
-    connect(ui -> textEdit, SIGNAL (textChanged()),this, SLOT (handleCompile()));
+    connect(ui -> textEditFragment, SIGNAL (textChanged()),this, SLOT (handleCompile()));
 
 }
 
@@ -49,7 +49,7 @@ MainWindow::~MainWindow()
 
 void MainWindow::handleCompile() {
 
-    QString source = ui -> textEdit -> toPlainText();
+    QString source = ui -> textEditFragment -> toPlainText();
     bool success = glWidget -> setFragmentShaderSource(source);
 
     if(success) {
@@ -58,3 +58,4 @@ void MainWindow::handleCompile() {
         statusBar()->showMessage("Failed to compile!");
     }
 }
+

@@ -13,6 +13,13 @@ GLWidget::GLWidget(QWidget *parent)
 {
     memset(textures, 0, sizeof(textures));
 
+    // Update timer
+    m_updatetimer.start(16);
+    connect(&m_updatetimer, SIGNAL(timeout()), this, SLOT (update()));
+
+    // Time
+    m_time.start();
+
 }
 
 GLWidget::~GLWidget()
@@ -21,6 +28,10 @@ GLWidget::~GLWidget()
     vbo.destroy();
     delete program;
     doneCurrent();
+}
+
+void GLWidget::handleUpdate() {
+    update();
 }
 
 QSize GLWidget::minimumSizeHint() const
@@ -62,22 +73,20 @@ void GLWidget::initializeGL()
     vshader = new QOpenGLShader(QOpenGLShader::Vertex, this);
     m_vertshader =
         "attribute highp vec4 vertex;\n"
-        "attribute mediump vec4 texCoord;\n"
-        "varying mediump vec4 texc;\n"
-        "uniform mediump mat4 matrix;\n"
-        "void main(void)\n"
-        "{\n"
+        "uniform mediump mat4 matrix;\n\n"
+        "void main(void) {\n\n"
         "    gl_Position = matrix * vertex;\n"
-        "    texc = texCoord;\n"
-        "}\n";
+        "\n}\n";
     vshader->compileSourceCode(m_vertshader);
 
     fshader = new QOpenGLShader(QOpenGLShader::Fragment, this);
     m_fragshader =
-        "uniform vec2 u_resolution;\n\n"
+        "uniform vec2 u_resolution;\n"
+        "uniform float u_time;\n\n"
         "void main(void) {\n\n"
         "    vec2 st = gl_FragCoord.xy/u_resolution;\n"
-        "    gl_FragColor = vec4(st.x, st.y, 0.0, 1.0);\n"
+        "    float fade = 1.0 + (sin(u_time * 3.0)/2.0);"
+        "    gl_FragColor = vec4(st.x, st.y, fade, 1.0);\n"
         "\n}\n";
     fshader->compileSourceCode(m_fragshader);
 
@@ -89,6 +98,7 @@ void GLWidget::initializeGL()
     program->link();
     program->bind();
     program->setUniformValue("u_resolution", width(), height());
+    program->setUniformValue("u_time", (float)m_time.elapsed());
 }
 
 void GLWidget::paintGL()
@@ -97,7 +107,7 @@ void GLWidget::paintGL()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     QMatrix4x4 m;
-    float t = 0.2;
+    float t = m_zoom;
     m.ortho(-t, +t, +t, -t, 4.0f, 25.0f);
     m.translate(0.0f, 0.0f, -10.0f);
     m.rotate(xRot / 16.0f, 1.0f, 0.0f, 0.0f);
@@ -106,6 +116,8 @@ void GLWidget::paintGL()
 
     program->setUniformValue("matrix", m);
     program->setUniformValue("u_resolution", width(), height());
+    program->setUniformValue("u_time", (float)m_time.elapsed() / 1000);
+
     program->enableAttributeArray(PROGRAM_VERTEX_ATTRIBUTE);
     program->enableAttributeArray(PROGRAM_TEXCOORD_ATTRIBUTE);
     program->setAttributeBuffer(PROGRAM_VERTEX_ATTRIBUTE, GL_FLOAT, 0, 3, 5 * sizeof(GLfloat));
