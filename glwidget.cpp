@@ -62,7 +62,7 @@ void GLWidget::initializeGL()
 {
     initializeOpenGLFunctions();
 
-    makeObject();
+    makeCube();
 
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
@@ -157,7 +157,7 @@ void GLWidget::mouseReleaseEvent(QMouseEvent * /* event */)
     emit clicked();
 }
 
-void GLWidget::makeObject()
+void GLWidget::makeCube()
 {
     static const int coords[6][4][3] = {
         { { +1, -1, -1 }, { -1, -1, -1 }, { -1, +1, -1 }, { +1, +1, -1 } },

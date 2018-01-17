@@ -17,9 +17,11 @@ public:
 
 private slots:
 
+     void newProject();
      void handleCompile();
 
 private:
+
 
 
     Ui::MainWindow *ui;

@@ -18,11 +18,13 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent),
 
     // Toolbar
     QToolBar *toolbar = addToolBar("main toolbar");
-    toolbar->addAction(QIcon(newpix), "New Shader");
+
+    QAction *newProject = toolbar->addAction(QIcon(newpix), "New Project");
     toolbar->addAction(QIcon(openpix), "Open Shader");
+    connect(newProject, SIGNAL(triggered(bool)), this, SLOT(newProject()));
+
     toolbar->addSeparator();
     QAction *quit = toolbar->addAction(QIcon(quitpix), "Quit");
-
     connect(quit, &QAction::triggered, qApp, &QApplication::quit);
 
     // Status bar
@@ -59,3 +61,8 @@ void MainWindow::handleCompile() {
     }
 }
 
+void MainWindow::newProject() {
+
+    qDebug() << "NEW PROJECT!";
+
+}

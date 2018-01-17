@@ -43,8 +43,9 @@ protected:
     void mouseReleaseEvent(QMouseEvent *event) override;
 
 private:
+
     void handleUpdate();
-    void makeObject();
+    void makeCube();
 
     QColor clearColor;
     QPoint lastPos;
