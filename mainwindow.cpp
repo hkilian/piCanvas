@@ -39,7 +39,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent),
     ui -> textEditVertex -> setPlainText(glWidget -> getVertexShaderSource());
 
     // Recompile on button press or text change
-    connect(ui -> compileButton, SIGNAL (released()),this, SLOT (handleCompile()));
     connect(ui -> textEditFragment, SIGNAL (textChanged()),this, SLOT (handleCompile()));
 
 }
